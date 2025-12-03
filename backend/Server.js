@@ -19,6 +19,7 @@ import userRoutes from "./src/routes/user.route.js";
 import authRoutes from "./src/routes/auth.route.js";
 import contactRoutes from "./src/routes/contact.route.js";
 import confirmRideRoutes from "./src/routes/confirm-ride.route.js";
+import bookingRoutes from "./src/routes/booking.route.js";
 import "./src/config/passport.js"; // Passport configuration
 
 // ==================== ENV & DIR CONFIG ====================
@@ -112,6 +113,7 @@ app.use("/api/auth", authRoutes);
 app.use("/api/user", userRoutes);
 app.use("/api/contact", contactRoutes);
 app.use("/api/confirm-ride", confirmRideRoutes);
+app.use("/api/bookings", bookingRoutes);
 
 // ==================== ERROR HANDLING ====================
 app.use((err, req, res, next) => {

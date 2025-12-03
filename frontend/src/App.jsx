@@ -23,6 +23,7 @@ const RiderDashboard = lazy(() => import("./pages/Login/DriverDashboard"));
 const UserDashboard = lazy(() => import("./pages/Login/UserDashboard"));
 const PublishRide = lazy(() => import("./pages/OfferRidePage"));
 const BookRide = lazy(() => import("./pages/BookRidePage"));
+const UserRidesPage = lazy(() => import("./pages/UserRidesPage"));
 
 // 404 Not Found
 const NotFound = () => (
@@ -73,11 +74,13 @@ const App = () => {
               {/* 🛡️ Protected Driver Routes */}
               <Route element={<DriverProtectedRoute />}>
                 <Route path="/driver-dashboard" element={<RiderDashboard />} />
+                <Route path="/driver-dashboard/profile" element={<RiderDashboard />} />
                 <Route path="/driver-dashboard/offer-ride" element={<PublishRide />} />
               </Route>
 
               {/* 👤 User Dashboard (still public for now) */}
               <Route path="/user-dashboard" element={<UserDashboard />} />
+              <Route path="/user-dashboard/find-rides" element={<UserRidesPage />} />
 
               {/* 🔁 Legacy Redirects */}
               <Route path="/About" element={<Navigate to="/about" replace />} />

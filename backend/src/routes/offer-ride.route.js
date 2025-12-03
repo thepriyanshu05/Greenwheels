@@ -6,6 +6,7 @@ import {
   getDriverRides,
   getUserRides,
   cancelRide,
+  getPublicAvailableRides,
 } from "../controllers/offer-ride.controller.js";
 import { protect } from "../middleware/authMiddleware.js";
 
@@ -51,6 +52,7 @@ router.patch("/cancel/:rideId", protect, cancelRide);
  * @access  Private (User)
  */
 router.post("/book", protect, bookRide);
+router.post("/book/:rideId", protect, bookRide);
 
 /**
  * @route   GET /api/rides/user
@@ -67,9 +69,16 @@ router.get("/user", protect, getUserRides);
 
 /**
  * @route   GET /api/rides/available
- * @desc    Get all available rides
+ * @desc    Get all available rides (public)
  * @access  Public
  */
-router.get("/available", getAvailableRides);
+router.get("/available", getPublicAvailableRides);
+
+/**
+ * @route   GET /api/rides
+ * @desc    Get available rides for logged-in user (exclude own rides)
+ * @access  Private
+ */
+router.get("/", protect, getAvailableRides);
 
 export default router;

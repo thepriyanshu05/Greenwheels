@@ -130,11 +130,21 @@ export const userAPI = {
 // ================================
 export const ridesAPI = {
   getAvailableRides: (params) => api.get("/rides/available", { params }),
+  // Authenticated browse (excludes current user's own rides)
+  getBrowseableRides: () => api.get("/rides"),
   offerRide: (rideData) => api.post("/rides/offer", rideData),
-  bookRide: (data) => api.post("/rides/book", data),
+  // Book by ride ID via path param
+  bookRide: (rideId) => api.post(`/rides/book/${rideId}`),
   getUserRides: () => api.get("/rides/user"),
   getDriverRides: () => api.get("/rides/driver"),
   cancelRide: (rideId) => api.patch(`/rides/cancel/${rideId}`),
+};
+
+// ================================
+// 📘 Booking APIs
+// ================================
+export const bookingsAPI = {
+  getMyBookings: () => api.get("/bookings/my"),
 };
 
 // ================================

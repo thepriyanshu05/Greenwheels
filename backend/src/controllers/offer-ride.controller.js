@@ -1,4 +1,5 @@
 import Ride from "../models/offer-rides.model.js";
+import Booking from "../models/booking.model.js";
 
 /**
  * 🚗 Offer a new ride (Driver only)
@@ -47,10 +48,30 @@ export const offerRide = async (req, res) => {
 };
 
 /**
+ * 🌐 Get available rides for logged-in user
+ * GET /api/rides
+ */
+export const getAvailableRides = async (req, res) => {
+  try {
+    const rides = await Ride.find({
+      driver: { $ne: req.user.id },
+      seatsAvailable: { $gt: 0 },
+    })
+      .populate("driver", "name email phone")
+      .sort({ date: 1 });
+
+    return res.status(200).json(rides);
+  } catch (err) {
+    console.error("🚗 Get Available Rides Error:", err.message);
+    return res.status(500).json({ success: false, message: "Server error" });
+  }
+};
+
+/**
  * 🚘 Get all available rides (Public)
  * GET /api/rides/available
  */
-export const getAvailableRides = async (req, res) => {
+export const getPublicAvailableRides = async (req, res) => {
   try {
     const rides = await Ride.find({ status: "available" })
       .populate("driver", "name email phone carnumber")
@@ -62,7 +83,7 @@ export const getAvailableRides = async (req, res) => {
       rides,
     });
   } catch (err) {
-    console.error("❌ Get Available Rides Error:", err.message);
+    console.error("🚗 Get Public Available Rides Error:", err.message);
     res.status(500).json({ success: false, message: "Server error" });
   }
 };
@@ -73,7 +94,7 @@ export const getAvailableRides = async (req, res) => {
  */
 export const bookRide = async (req, res) => {
   try {
-    const { rideId } = req.body;
+    const rideId = req.params.rideId || req.body.rideId;
 
     if (req.user.role !== "user") {
       return res.status(403).json({
@@ -101,6 +122,14 @@ export const bookRide = async (req, res) => {
       });
     }
 
+    // Prevent driver from booking their own ride
+    if (ride.driver.toString() === req.user._id.toString()) {
+      return res.status(400).json({
+        success: false,
+        message: "Drivers cannot book their own rides",
+      });
+    }
+
     if (ride.passengers.includes(req.user._id)) {
       return res.status(400).json({
         success: false,
@@ -125,12 +154,19 @@ export const bookRide = async (req, res) => {
 
     await ride.save();
 
+    // Create booking record
+    const booking = await Booking.create({
+      ride: ride._id,
+      user: req.user._id,
+    });
+
     console.log(`🎟️ Ride booked by ${req.user.name} (${req.user.email})`);
 
     res.status(200).json({
       success: true,
       message: "Ride booked successfully",
       ride,
+      booking,
     });
   } catch (err) {
     console.error("❌ Book Ride Error:", err.message);

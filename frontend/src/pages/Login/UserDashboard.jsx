@@ -26,6 +26,8 @@ import {
   DollarSign,
 } from "lucide-react";
 
+import { userAPI } from "@/services/api";
+
 const fadeInUp = {
   initial: { opacity: 0, y: 20 },
   animate: { opacity: 1, y: 0 },
@@ -60,6 +62,8 @@ export default function UserDashboard() {
   const [sidebarOpen, setSidebarOpen] = useState(false);
 
   const handleLogout = () => {
+    localStorage.removeItem("token");
+    localStorage.removeItem("user");
     sessionStorage.removeItem("userId");
     sessionStorage.removeItem("user");
     sessionStorage.removeItem("token");
@@ -69,6 +73,7 @@ export default function UserDashboard() {
   const sidebarItems = [
     { id: "dashboard", label: "Dashboard", icon: LayoutDashboard },
     { id: "book-ride", label: "Book a Ride", icon: BookOpen },
+    { id: "find-rides", label: "Find Rides", icon: Navigation },
     { id: "my-bookings", label: "My Bookings", icon: Car },
     { id: "notifications", label: "Notifications", icon: Bell },
     { id: "profile", label: "Profile", icon: User },
@@ -116,37 +121,22 @@ export default function UserDashboard() {
   useEffect(() => {
     const fetchProfile = async () => {
       try {
-        const token = sessionStorage.getItem("token");
-        const storedUser = JSON.parse(sessionStorage.getItem("user") || "{}");
+        const storedUser =
+          JSON.parse(localStorage.getItem("user") || "null") || {};
 
-        if (token) {
-          const res = await fetch("http://localhost:5000/api/auth/profile", {
-            headers: { Authorization: `Bearer ${token}` },
-          });
+        const res = await userAPI.getProfile();
+        const data = res.data?.user || {};
 
-          if (res.ok) {
-            const data = await res.json();
-            setUserProfile({
-              name: data.name || storedUser.name || "",
-              email: data.email || storedUser.email || "",
-              phone: data.phone || storedUser.phone || "",
-              gender: data.gender || storedUser.gender || "",
-            });
-            return;
-          }
-        }
-
-        // Fallback to stored user if token not found or API fails
-        if (storedUser) {
-          setUserProfile({
-            name: storedUser.name || "",
-            email: storedUser.email || "",
-            phone: storedUser.phone || "",
-            gender: storedUser.gender || "",
-          });
-        }
+        setUserProfile({
+          name: data.name || storedUser.name || "",
+          email: data.email || storedUser.email || "",
+          phone: data.phone || storedUser.phone || "",
+          gender: data.gender || storedUser.gender || "",
+        });
       } catch (err) {
-        const fallback = JSON.parse(sessionStorage.getItem("user") || "{}");
+        console.error("Failed to fetch user profile:", err);
+        const fallback =
+          JSON.parse(localStorage.getItem("user") || "null") || {};
         setUserProfile({
           name: fallback.name || "",
           email: fallback.email || "",
@@ -456,6 +446,9 @@ export default function UserDashboard() {
                     key={item.id}
                     onClick={() => {
                       setActiveSection(item.id);
+                      if (item.id === "find-rides") {
+                        navigate("/user-dashboard/find-rides");
+                      }
                       setSidebarOpen(false);
                     }}
                     className={`w-full flex items-center gap-3 px-4 py-3 rounded-xl transition-all duration-200 ${

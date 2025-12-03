@@ -1,7 +1,7 @@
 "use client";
 import { useState, useEffect, useRef } from "react";
 import { motion } from "framer-motion";
-import { useNavigate } from "react-router-dom";
+import { useNavigate, useLocation } from "react-router-dom";
 import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
@@ -28,6 +28,7 @@ import {
   Edit,
   Trash2,
 } from "lucide-react";
+import { driverAPI, ridesAPI } from "@/services/api";
 
 const fadeInUp = {
   initial: { opacity: 0, y: 20 },
@@ -40,6 +41,7 @@ const staggerContainer = {
 
 export default function DriverDashboard() {
   const navigate = useNavigate();
+  const location = useLocation();
 
   const [driverProfile, setDriverProfile] = useState({
     name: "",
@@ -62,6 +64,9 @@ export default function DriverDashboard() {
 
   // ✅ Logout handler
   const handleLogout = () => {
+    localStorage.removeItem("token");
+    localStorage.removeItem("role");
+    localStorage.removeItem("driver");
     sessionStorage.removeItem("driver");
     sessionStorage.removeItem("driverId");
     navigate("/");
@@ -112,18 +117,16 @@ export default function DriverDashboard() {
     },
   ];
 
-  // ✅ Fetch driver's offered rides
+  // ✅ Fetch driver's offered rides (authenticated)
   const fetchOfferedRides = async () => {
     setLoading(true);
     try {
-      const driverId = sessionStorage.getItem("driverId");
-      const res = await fetch(`http://localhost:5000/api/rides/my-rides?driverId=${driverId}`);
-      if (res.ok) {
-        const data = await res.json();
-        setOfferedRides(data);
-      }
+      const res = await ridesAPI.getDriverRides();
+      const rides = res.data?.rides || [];
+      setOfferedRides(rides);
     } catch (err) {
-      console.error("Failed to fetch rides:", err);
+      console.error("Failed to fetch driver rides:", err);
+      setOfferedRides([]);
     } finally {
       setLoading(false);
     }
@@ -166,19 +169,50 @@ export default function DriverDashboard() {
 
   // ✅ Format date/time helpers
   const formatDate = (d) => new Date(d).toLocaleDateString("en-IN");
-  const formatTime = (t) => {
-    const [h, m] = t.split(":");
-    const d = new Date();
-    d.setHours(h, m);
-    return d.toLocaleTimeString("en-IN", { hour: "2-digit", minute: "2-digit" });
-  };
+  const formatTime = (d) =>
+    new Date(d).toLocaleTimeString("en-IN", {
+      hour: "2-digit",
+      minute: "2-digit",
+    });
 
   // ✅ Fetch on mount
   useEffect(() => {
-    const stored = JSON.parse(sessionStorage.getItem("driver")) || {};
-    setDriverProfile(stored);
+    const fetchProfile = async () => {
+      try {
+        const res = await driverAPI.getProfile();
+        const data = res.data?.driver || {};
+
+        setDriverProfile({
+          name: data.name || "",
+          email: data.email || "",
+          phone: data.phone || "",
+          gender: data.gender || "",
+          carnumber: data.carnumber || "",
+        });
+      } catch (err) {
+        console.error("Failed to fetch driver profile:", err);
+        const stored =
+          JSON.parse(localStorage.getItem("driver") || "null") || {};
+
+        setDriverProfile({
+          name: stored.name || "",
+          email: stored.email || "",
+          phone: stored.phone || "",
+          gender: stored.gender || "",
+          carnumber: stored.carnumber || "",
+        });
+      }
+    };
+
+    fetchProfile();
     fetchOfferedRides();
   }, []);
+
+  useEffect(() => {
+    if (location.pathname.startsWith("/driver-dashboard/profile")) {
+      setActiveSection("profile");
+    }
+  }, [location.pathname]);
 
   // ✅ Notifications
   useEffect(() => {
@@ -312,7 +346,7 @@ export default function DriverDashboard() {
                         {r.from} → {r.to}
                       </p>
                       <p className="text-sm text-slate-600">
-                        {formatDate(r.date)} • {formatTime(r.time)}
+                        {formatDate(r.date)} • {formatTime(r.date)}
                       </p>
                       <Button
                         className="mt-3 w-full"
@@ -380,8 +414,8 @@ export default function DriverDashboard() {
     <div className="min-h-screen bg-gradient-to-br from-slate-50 via-blue-50 to-indigo-100 flex">
       {/* Sidebar */}
       <div
-        className={`fixed inset-y-0 left-0 z-40 w-64 bg-white/80 backdrop-blur-xl border-r border-white/50 shadow-xl transform transition-transform duration-300 ease-in-out ${
-          sidebarOpen ? "translate-x-0" : "-translate-x-full lg:translate-x-0"
+        className={`fixed inset-y-0 left-0 z-50 w-64 bg-white/80 backdrop-blur-xl border-r border-white/50 shadow-xl transform transition-transform duration-300 ease-in-out lg:translate-x-0 lg:static lg:inset-0 ${
+          sidebarOpen ? "translate-x-0" : "-translate-x-full"
         }`}
       >
         <div className="flex flex-col h-full">
@@ -396,7 +430,19 @@ export default function DriverDashboard() {
               return (
                 <button
                   key={item.id}
-                  onClick={() => setActiveSection(item.id)}
+                  onClick={() => {
+                    setActiveSection(item.id);
+                    if (item.id === "dashboard") {
+                      navigate("/driver-dashboard");
+                    } else if (item.id === "profile") {
+                      navigate("/driver-dashboard/profile");
+                    } else if (item.id === "offer-ride") {
+                      navigate("/driver-dashboard/offer-ride");
+                    }
+                    if (window.innerWidth < 1024) {
+                      setSidebarOpen(false);
+                    }
+                  }}
                   className={`w-full flex items-center gap-3 px-4 py-3 rounded-xl transition ${
                     active
                       ? "bg-gradient-to-r from-blue-500 to-indigo-500 text-white"
@@ -422,7 +468,31 @@ export default function DriverDashboard() {
       </div>
 
       {/* Main */}
-      <div className="flex-1 p-6 lg:p-8">{renderMain()}</div>
+      <div className="flex-1 lg:ml-0">
+        <div className="lg:hidden flex items-center justify-between p-4 bg-white/80 backdrop-blur-xl border-b border-white/50">
+          <button
+            onClick={() => setSidebarOpen(true)}
+            className="p-2 rounded-lg hover:bg-white/50 transition-colors"
+          >
+            <Menu className="w-6 h-6 text-slate-700" />
+          </button>
+          <div className="flex items-center gap-2">
+            <div className="w-8 h-8 bg-gradient-to-r from-blue-500 to-indigo-500 rounded-lg flex items-center justify-center">
+              <Navigation className="w-5 h-5 text-white" />
+            </div>
+            <span className="font-bold text-slate-800">Greenwheels Driver</span>
+          </div>
+        </div>
+
+        <main className="p-6 lg:p-8">{renderMain()}</main>
+      </div>
+
+      {sidebarOpen && (
+        <div
+          className="fixed inset-0 bg-black/50 z-40 lg:hidden"
+          onClick={() => setSidebarOpen(false)}
+        />
+      )}
     </div>
   );
 }
