@@ -1,275 +1,246 @@
-# 🚗 Greenwheels - Smart Carpooling Platform
+# 🚗 GreenWheels – Smart Carpooling Platform (BCC351)
 
-A modern, secure, and user-friendly carpooling platform built with React and Node.js.
+> **Mini Project | B.Tech 2nd Year (BCC351)**  
+> Developed under the guidance of **Mr. Aquib Ali**  
+> Department of Computer Science & Engineering  
+> [PSIT-Pranveer Singh Institute of Technology]
+
+---
+
+## 🌿 Overview
+
+**GreenWheels** is an innovative and eco-friendly **Smart Carpooling System** designed to connect passengers and drivers traveling on similar routes.  
+It encourages **shared commuting**, **cost efficiency**, and **carbon emission reduction** through a secure, fast, and modern digital platform.
+
+---
 
 ## ✨ Features
 
-- 🔐 **Secure Authentication** - JWT tokens, Google OAuth, password hashing
-- 🎨 **Modern UI/UX** - Responsive design with Tailwind CSS and Framer Motion
-- ♿ **Accessibility** - WCAG compliant with proper ARIA labels and keyboard navigation
-- 🚀 **Performance Optimized** - Code splitting, lazy loading, and optimized bundles
-- 🔍 **SEO Ready** - Meta tags, OpenGraph, and structured data
-- 📱 **Mobile First** - Fully responsive design for all devices
-- 🛡️ **Security First** - Rate limiting, input validation, and XSS protection
-- 🌐 **PWA Ready** - Service worker and offline capabilities
+- 🔐 **Secure Authentication** – JWT tokens, password hashing, and role-based access (User/Driver)
+- 🚗 **Driver Dashboard** – Publish and manage offered rides
+- 🧍‍♂️ **User Dashboard** – Browse and book available rides
+- 🎨 **Modern UI/UX** – Responsive and animated interface with Tailwind CSS + Framer Motion
+- 📱 **Fully Responsive** – Optimized for desktop, tablet, and mobile
+- 🛡️ **Data Protection** – MongoSanitize, Helmet, Rate limiting
+- 🌐 **PWA Ready** – Installable app with offline caching
+- 💬 **Contact & Support Form** – Easy communication system
+- ⚡ **Optimized Performance** – Lazy loading, caching, and compression
+
+---
 
 ## 🛠️ Tech Stack
 
-### Frontend
-- **React 19** - Latest React with concurrent features
-- **Vite** - Fast build tool and development server
-- **Tailwind CSS** - Utility-first CSS framework
-- **Framer Motion** - Smooth animations and transitions
-- **React Router** - Client-side routing
-- **React Hook Form** - Form validation and handling
-- **Axios** - HTTP client with interceptors
-- **Sonner** - Toast notifications
-- **Zod** - Schema validation
+### 🖥️ Frontend
+- React.js (with Vite)
+- Tailwind CSS
+- Framer Motion
+- React Router DOM
+- Axios (API Service Layer)
+- Sonner (Toast Notifications)
+- Zod (Form Validation)
 
-### Backend
-- **Node.js** - JavaScript runtime
-- **Express.js** - Web framework
-- **MongoDB** - NoSQL database
-- **Mongoose** - ODM for MongoDB
-- **JWT** - JSON Web Tokens for authentication
-- **Passport.js** - Authentication middleware
-- **Helmet** - Security headers
-- **Express Rate Limit** - Rate limiting
-- **Bcrypt** - Password hashing
+### ⚙️ Backend
+- Node.js
+- Express.js
+- MongoDB (Mongoose ODM)
+- JWT Authentication
+- Passport.js
+- Helmet, Rate Limit, Compression, CORS
+
+### 🧩 Tools
+- Visual Studio Code  
+- Postman  
+- Git & GitHub  
+- MongoDB Compass / Atlas  
+
+---
+
+## 🗂️ Project Structure
+
+Greenwheels/
+│
+├── frontend/ # React Frontend (Vite)
+│ ├── src/
+│ │ ├── components/ # Navbar, Footer, Buttons, etc.
+│ │ ├── pages/ # Home, Login, Dashboard, etc.
+│ │ ├── services/ # API services (axios)
+│ │ ├── assets/ # Images, icons
+│ │ └── App.jsx
+│ ├── tailwind.config.js
+│ ├── vite.config.js
+│ └── package.json
+│
+├── backend/ # Express Backend
+│ ├── src/
+│ │ ├── config/ # Database and passport configuration
+│ │ ├── controllers/ # Logic for users, drivers, rides
+│ │ ├── middleware/ # Authentication and error handlers
+│ │ ├── models/ # Mongoose Schemas
+│ │ └── routes/ # Express route definitions
+│ ├── Server.js
+│ └── package.json
+│
+├── .env # Environment variables
+├── package-lock.json
+└── README.md
+
+yaml
+Copy code
+
+---
 
 ## 🚀 Quick Start
 
 ### Prerequisites
-- Node.js 18+ 
+- Node.js 18+
 - MongoDB 4.4+
 - Git
 
 ### Installation
 
-1. **Clone the repository**
+1. **Clone the Repository**
 ```bash
-git clone https://github.com/your-username/greenwheels-carpooling.git
-cd greenwheels-carpooling
-```
+git clone https://github.com/thepriyanshu05/Greenwheels.git
+cd Greenwheels
+Install Dependencies
 
-2. **Install root dependencies**
-```bash
-npm install
-```
-
-3. **Set up Backend**
-```bash
+Backend:
+bash
+Copy code
 cd backend
 npm install
-
-# Create environment file
-cp .env.example .env
-# Edit .env with your MongoDB URI and other settings
-```
-
-4. **Set up Frontend**
-```bash
+Frontend:
+bash
+Copy code
 cd ../frontend
 npm install
+Setup Environment Variables
 
-# Create environment file
-cp .env.example .env
-# Edit .env with your API URL and other settings
-```
-
-5. **Start Development Servers**
-
-Backend (Terminal 1):
-```bash
-cd backend
-npm run dev
-```
-
-Frontend (Terminal 2):
-```bash
-cd frontend
-npm run dev
-```
-
-The application will be available at:
-- Frontend: http://localhost:5173
-- Backend: http://localhost:5000
-
-## 📁 Project Structure
-
-```
-greenwheels-carpooling/
-├── backend/
-│   ├── src/
-│   │   ├── config/         # Database and app configuration
-│   │   ├── controllers/    # Route handlers
-│   │   ├── middleware/     # Custom middleware
-│   │   ├── models/         # Database models
-│   │   └── routes/         # API routes
-│   ├── server.js          # Server entry point
-│   └── package.json
-├── frontend/
-│   ├── public/            # Static assets
-│   ├── src/
-│   │   ├── components/    # Reusable components
-│   │   ├── pages/         # Page components
-│   │   ├── services/      # API services
-│   │   ├── hooks/         # Custom hooks
-│   │   ├── utils/         # Utility functions
-│   │   └── assets/        # Images, icons, etc.
-│   ├── index.html
-│   └── package.json
-└── README.md
-```
-
-## 🔧 Configuration
-
-### Environment Variables
-
-**Backend (.env)**
-```env
+Create backend/.env file
+env
+Copy code
 NODE_ENV=development
 PORT=5000
-MONGO_URI=mongodb://localhost:27017/greenwheels
-JWT_SECRET=your-super-secret-jwt-key
-SESSION_SECRET=your-session-secret
-GOOGLE_CLIENT_ID=your-google-client-id
-GOOGLE_CLIENT_SECRET=your-google-client-secret
+MONGO_URI=mongodb://127.0.0.1:27017/greenwheels
+JWT_SECRET=your_jwt_secret
+SESSION_SECRET=your_session_secret
 CLIENT_URL=http://localhost:5173
-```
-
-**Frontend (.env)**
-```env
+Create frontend/.env file
+env
+Copy code
 VITE_API_URL=http://localhost:5000/api
-VITE_APP_NAME=Greenwheels
-VITE_GOOGLE_CLIENT_ID=your-google-client-id
-```
+VITE_APP_NAME=GreenWheels
+Run the Project
 
-## 🧪 Testing
-
-```bash
-# Backend tests
+bash
+Copy code
+# Start Backend
 cd backend
-npm test
+npm run dev
 
-# Frontend tests
-cd frontend
-npm test
-```
+# Start Frontend (in another terminal)
+cd ../frontend
+npm run dev
+App runs at:
+👉 Frontend: http://localhost:5173
+👉 Backend: http://localhost:5000
 
-## 🏗️ Building for Production
+📊 Performance & Security
+🧠 Performance
+Lazy-loaded React routes
 
-```bash
-# Build frontend
-cd frontend
-npm run build
+Code splitting & tree shaking
 
-# Build and start backend
-cd backend
-npm run build
-npm start
-```
+Asset compression & caching
 
-## 🚀 Deployment
+CDN-ready architecture
 
-### Docker Deployment
+🔒 Security
+Helmet.js for secure headers
 
-1. **Build Docker images**
-```bash
+bcryptjs for password hashing
+
+Rate limiting to prevent DDoS
+
+Mongo-sanitize & input validation
+
+JWT for route protection
+
+📱 Accessibility
+ARIA-labeled components
+
+Keyboard navigation
+
+High-contrast color scheme
+
+Screen reader compatibility
+
+🧪 Testing
+bash
+Copy code
 # Backend
 cd backend
-docker build -t greenwheels-backend .
+npm test
 
 # Frontend
 cd frontend
-docker build -t greenwheels-frontend .
-```
+npm test
+🧱 Build for Production
+bash
+Copy code
+# Frontend
+cd frontend
+npm run build
 
-2. **Run with Docker Compose**
-```bash
+# Backend
+cd ../backend
+npm run build
+npm start
+🧭 Deployment
+Option 1: Docker Compose
+bash
+Copy code
 docker-compose up -d
-```
+Option 2: Manual Hosting
+Deploy backend → Render / Railway / Heroku
 
-### Manual Deployment
+Deploy frontend → Vercel / Netlify
 
-1. **Deploy Backend** (e.g., on Heroku, Railway, or DigitalOcean)
-2. **Deploy Frontend** (e.g., on Vercel, Netlify, or Cloudflare Pages)
-3. **Set up MongoDB** (MongoDB Atlas recommended)
-4. **Configure environment variables** on your hosting platform
+Connect both via API URL
 
-## 📊 Performance Optimizations
+👨‍💻 Team Members
+Name	Roll Number
+Priyanshu Singh	2401640100770
+Priyam Singh Patel	2401640100757
+Rishikant Rathore	2401640100814
+Ridhima Dixit	2401640100807
 
-- **Code Splitting** - Dynamic imports for route-based splitting
-- **Lazy Loading** - Images and components loaded on demand
-- **Bundle Optimization** - Tree shaking and minification
-- **Caching** - Browser caching with proper headers
-- **CDN Ready** - Static assets optimized for CDN delivery
+🧑‍🏫 Guided By
+Mr. Aquib Ali
+Department of Computer Science & Engineering
+[Your College Name]
 
-## 🔒 Security Features
+📚 Subject Details
+Mini Project (BCC351)
+Bachelor of Technology – 2nd Year
+Department of Computer Science & Engineering
 
-- **Input Validation** - Server-side validation with express-validator
-- **Rate Limiting** - API rate limiting to prevent abuse
-- **CORS Configuration** - Proper cross-origin resource sharing
-- **Security Headers** - Helmet.js for security headers
-- **Data Sanitization** - Protection against NoSQL injection
-- **Password Security** - Bcrypt hashing with salt rounds
+🌱 Future Enhancements
+📍 Real-time GPS Tracking
 
-## ♿ Accessibility Features
+💬 In-app Chat between Driver and Passenger
 
-- **ARIA Labels** - Proper labeling for screen readers
-- **Keyboard Navigation** - Full keyboard accessibility
-- **Focus Management** - Proper focus indication and trapping
-- **Color Contrast** - WCAG AA compliant color ratios
-- **Screen Reader Support** - Semantic HTML and proper structure
+💸 Ride Fare Estimation (Google Maps API)
 
-## 📱 Progressive Web App
+💳 Online Payment Integration
 
-- **Service Worker** - Offline functionality and caching
-- **Web App Manifest** - App-like experience on mobile
-- **Push Notifications** - Real-time updates (coming soon)
-- **Install Prompt** - Add to home screen functionality
+⭐ Rating and Review System
 
-## 🤝 Contributing
+📲 Mobile App (React Native)
 
-1. Fork the repository
-2. Create a feature branch (`git checkout -b feature/amazing-feature`)
-3. Commit your changes (`git commit -m 'Add amazing feature'`)
-4. Push to the branch (`git push origin feature/amazing-feature`)
-5. Open a Pull Request
+📜 License
+This project is developed as part of the B.Tech 2nd Year Mini Project (BCC351) for academic purposes.
+© 2025 GreenWheels Team. All rights reserved.
 
-## 📄 License
-
-This project is licensed under the MIT License - see the [LICENSE](LICENSE) file for details.
-
-## 🆘 Support
-
-If you encounter any issues or have questions:
-
-1. Check the [Issues](https://github.com/your-username/greenwheels-carpooling/issues) page
-2. Create a new issue with detailed information
-3. Contact the development team
-
-## 🗺️ Roadmap
-
-- [ ] Real-time chat between riders and drivers
-- [ ] Push notifications for ride updates
-- [ ] Payment integration
-- [ ] Route optimization
-- [ ] Admin dashboard
-- [ ] Mobile app (React Native)
-- [ ] Multi-language support
-
----
-
-**Built with ❤️ by the Greenwheels Team**+ Vite
-
-This template provides a minimal setup to get React working in Vite with HMR and some ESLint rules.
-
-Currently, two official plugins are available:
-
-- [@vitejs/plugin-react](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react) uses [Babel](https://babeljs.io/) for Fast Refresh
-- [@vitejs/plugin-react-swc](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react-swc) uses [SWC](https://swc.rs/) for Fast Refresh
-
-## Expanding the ESLint configuration
-
-If you are developing a production application, we recommend using TypeScript with type-aware lint rules enabled. Check out the [TS template](https://github.com/vitejs/vite/tree/main/packages/create-vite/template-react-ts) for information on how to integrate TypeScript and [`typescript-eslint`](https://typescript-eslint.io) in your project.
+🖋️ Built with ❤️ by
+Priyanshu Singh, Priyam Singh Patel, Rishikant Rathore, and Ridhima Dixit
