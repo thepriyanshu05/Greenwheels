@@ -1,7 +1,14 @@
 "use client";
 import React, { useState } from "react";
 import { motion } from "framer-motion";
-import { Mail, Lock, Eye, EyeOff, AlertCircle, CheckCircle } from "lucide-react";
+import {
+  Mail,
+  Lock,
+  Eye,
+  EyeOff,
+  AlertCircle,
+  CheckCircle,
+} from "lucide-react";
 import { Button } from "../../components/ui/button";
 import { Input } from "../../components/ui/input";
 import { Label } from "../../components/ui/label";
@@ -23,35 +30,41 @@ export default function DriverLogin() {
   const [showPassword, setShowPassword] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
 
+  // ==============================
+  // 🔐 Handle Driver Login
+  // ==============================
   const handleSubmit = async (e) => {
     e.preventDefault();
     setIsLoading(true);
 
     try {
       const res = await driverAPI.login({ email, password });
-       
-      // 🟢 Debug logs — to verify backend response
-      console.log("🔍 Driver Login API Response:", res.data);
-      console.log("📡 HTTP Status:", res.status);
-      console.log("✅ Response OK?:", res.status >= 200 && res.status < 300);
+
+      console.log("🚗 Driver Login Response:", res.data);
 
       if (res.data?.token) {
+        // ✅ Store token and driver data
         localStorage.setItem("token", res.data.token);
+        localStorage.setItem("role", "driver");
         localStorage.setItem("driver", JSON.stringify(res.data.driver));
-        sessionStorage.setItem("driverId", res.data.driver._id || res.data.driverId);
+
+        sessionStorage.setItem(
+          "driverId",
+          res.data.driver?.id || res.data.driver?._id
+        );
 
         toast.success("✅ Driver login successful!", {
           icon: <CheckCircle className="w-4 h-4" />,
         });
 
         setTimeout(() => {
-          navigate("/rider-dashboard");
+          navigate("/driver-dashboard");
         }, 1000);
       } else {
         throw new Error("Login succeeded but token missing");
       }
     } catch (err) {
-      console.error("Driver login error:", err);
+      console.error("❌ Driver Login Error:", err);
       const msg =
         err.response?.data?.message ||
         err.message ||
@@ -62,29 +75,27 @@ export default function DriverLogin() {
     }
   };
 
+  // ==============================
+  // 🧱 UI Rendering
+  // ==============================
   return (
     <div className="min-h-screen relative overflow-hidden bg-gradient-to-br from-purple-900 via-blue-900 to-indigo-900">
-      {/* Animated Background */}
+      {/* Background */}
       <div className="absolute inset-0">
         <img
           src="https://images.unsplash.com/photo-1506744038136-46273834b3fb?auto=format&fit=crop&w=1200&q=80"
-          alt="Carpooling Driver Login"
+          alt="Driver Login Background"
           className="absolute inset-0 w-full h-full object-cover opacity-20 pointer-events-none"
         />
         <motion.div
           className="absolute inset-0 bg-gradient-to-r from-purple-600/20 via-pink-600/20 to-blue-600/20"
           animate={{
             background: [
-              "linear-gradient(45deg, rgba(147, 51, 234, 0.2), rgba(219, 39, 119, 0.2), rgba(59, 130, 246, 0.2))",
-              "linear-gradient(45deg, rgba(59, 130, 246, 0.2), rgba(147, 51, 234, 0.2), rgba(219, 39, 119, 0.2))",
-              "linear-gradient(45deg, rgba(219, 39, 119, 0.2), rgba(59, 130, 246, 0.2), rgba(147, 51, 234, 0.2))",
+              "linear-gradient(45deg, rgba(147,51,234,0.2), rgba(219,39,119,0.2), rgba(59,130,246,0.2))",
+              "linear-gradient(45deg, rgba(59,130,246,0.2), rgba(147,51,234,0.2), rgba(219,39,119,0.2))",
             ],
           }}
-          transition={{
-            duration: 8,
-            repeat: Infinity,
-            ease: "linear",
-          }}
+          transition={{ duration: 8, repeat: Infinity, ease: "linear" }}
         />
         {[...Array(6)].map((_, i) => (
           <motion.div
@@ -112,7 +123,7 @@ export default function DriverLogin() {
         ))}
       </div>
 
-      {/* Login Card */}
+      {/* Login Form */}
       <div className="relative z-10 flex items-center justify-center min-h-screen p-4">
         <motion.div
           initial={{ opacity: 0, y: 20, scale: 0.95 }}
@@ -126,13 +137,13 @@ export default function DriverLogin() {
                 GreenWheels Driver
               </CardTitle>
               <CardDescription className="text-gray-300">
-                Sign in to your driver account and start offering rides
+                Sign in to your driver account to start offering rides
               </CardDescription>
             </CardHeader>
 
             <CardContent className="space-y-6">
               <form onSubmit={handleSubmit} className="space-y-4">
-                {/* Email */}
+                {/* Email Field */}
                 <div className="space-y-2">
                   <Label htmlFor="email" className="text-white font-medium">
                     Email Address
@@ -145,13 +156,13 @@ export default function DriverLogin() {
                       value={email}
                       onChange={(e) => setEmail(e.target.value)}
                       className="pl-10 bg-white/10 border-white/20 text-white placeholder:text-gray-300"
-                      placeholder="Enter your email address"
+                      placeholder="Enter your email"
                       required
                     />
                   </div>
                 </div>
 
-                {/* Password */}
+                {/* Password Field */}
                 <div className="space-y-2">
                   <Label htmlFor="password" className="text-white font-medium">
                     Password
@@ -181,7 +192,7 @@ export default function DriverLogin() {
                   </div>
                 </div>
 
-                {/* Submit */}
+                {/* Submit Button */}
                 <div>
                   <Button
                     type="submit"
@@ -205,11 +216,12 @@ export default function DriverLogin() {
                 </div>
               </form>
 
+              {/* Register Link */}
               <div className="text-center">
                 <p className="text-gray-300">
                   Don’t have a driver account?{" "}
                   <a
-                    href="/Driver-register"
+                    href="/driver-register"
                     className="text-white font-semibold hover:underline"
                   >
                     Register

@@ -1,43 +1,54 @@
 import jwt from "jsonwebtoken";
 import User from "../models/user.model.js";
+import Driver from "../models/driver.model.js";
 
 /**
- * ✅ Protect routes — verifies JWT token
- * Adds the user object to req.user if valid
+ * ✅ Protect routes — verifies JWT token for both users and drivers
+ * If valid, attaches the authenticated entity (user or driver) to req.user
  */
 export const protect = async (req, res, next) => {
   let token;
 
   try {
+    // Check for Bearer token in Authorization header
     if (
       req.headers.authorization &&
       req.headers.authorization.startsWith("Bearer")
     ) {
       token = req.headers.authorization.split(" ")[1];
 
+      // Verify token
       const decoded = jwt.verify(token, process.env.JWT_SECRET);
 
-      req.user = await User.findById(decoded.id).select("-password");
+      // Try to find the user or driver by ID
+      let authenticatedUser =
+        (await User.findById(decoded.id).select("-password")) ||
+        (await Driver.findById(decoded.id).select("-password"));
 
-      if (!req.user) {
+      if (!authenticatedUser) {
         return res.status(401).json({
           success: false,
-          message: "User not found",
+          message: "Authentication failed — user not found",
         });
       }
 
-      next();
-    } else {
-      return res.status(401).json({
-        success: false,
-        message: "Not authorized, no token provided",
-      });
+      // Attach user/driver object and role to request
+      req.user = authenticatedUser;
+      req.user.role = decoded.role || "user"; // fallback if role missing
+
+      return next();
     }
+
+    // No token present
+    return res.status(401).json({
+      success: false,
+      message: "Not authorized — no token provided",
+    });
   } catch (err) {
     console.error("❌ Auth Middleware Error:", err.message);
-    res.status(401).json({
+    return res.status(401).json({
       success: false,
-      message: "Token invalid or expired",
+      message: "Invalid or expired token. Please log in again.",
     });
   }
 };

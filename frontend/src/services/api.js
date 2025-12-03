@@ -1,127 +1,158 @@
-import axios from 'axios';
-import { toast } from 'sonner';
+import axios from "axios";
+import { toast } from "sonner";
 
-// Create axios instance with default config
+// ================================
+// 🌍 Axios Instance Configuration
+// ================================
 const api = axios.create({
-  baseURL: import.meta.env.VITE_API_URL || 'http://localhost:5000/api',
+  baseURL: import.meta.env.VITE_API_URL || "http://localhost:5000/api",
   timeout: 10000,
   withCredentials: true,
   headers: {
-    'Content-Type': 'application/json',
+    "Content-Type": "application/json",
   },
 });
 
-// Request interceptor
+// ================================
+// 🚦 Request Interceptor
+// ================================
 api.interceptors.request.use(
   (config) => {
-    // Add auth token if available
-    const token = localStorage.getItem('token') || sessionStorage.getItem('token');
-    if (token) {
-      config.headers.Authorization = `Bearer ${token}`;
-    }
-    
-    // Log request in development
+    // ✅ Attach JWT token if available
+    const token =
+      localStorage.getItem("token") || sessionStorage.getItem("token");
+    if (token) config.headers.Authorization = `Bearer ${token}`;
+
+    // 🧠 Log requests in development
     if (import.meta.env.DEV) {
-      console.log(`🚀 API Request: ${config.method?.toUpperCase()} ${config.url}`, config.data);
+      console.log(
+        `🚀 API Request: ${config.method?.toUpperCase()} ${config.url}`,
+        config.data
+      );
     }
-    
     return config;
   },
   (error) => {
-    console.error('❌ Request Error:', error);
+    console.error("❌ Request Error:", error);
     return Promise.reject(error);
   }
 );
 
-// Response interceptor
+// ================================
+// 🛑 Response Interceptor
+// ================================
 api.interceptors.response.use(
   (response) => {
-    // Log response in development
     if (import.meta.env.DEV) {
-      console.log(`✅ API Response: ${response.config.method?.toUpperCase()} ${response.config.url}`, response.data);
+      console.log(
+        `✅ API Response: ${response.config.method?.toUpperCase()} ${response.config.url}`,
+        response.data
+      );
     }
-    
     return response;
   },
   (error) => {
     const { response, message } = error;
-    
-    // Log error
-    console.error('❌ API Error:', {
+
+    console.error("❌ API Error:", {
       status: response?.status,
       statusText: response?.statusText,
       data: response?.data,
       message,
-      url: error.config?.url
+      url: error.config?.url,
     });
-    
-    // Handle different error cases
+
+    // 🚨 Handle common errors
     if (response?.status === 401) {
-      // Unauthorized - clear tokens and redirect to login
-      localStorage.removeItem('token');
-      sessionStorage.removeItem('token');
-      sessionStorage.removeItem('user');
-      sessionStorage.removeItem('userId');
-      sessionStorage.removeItem('driverId');
-      
-      if (window.location.pathname !== '/login' && window.location.pathname !== '/role-selection') {
-        toast.error('Session expired. Please log in again.');
-        window.location.href = '/role-selection';
+      localStorage.clear();
+      sessionStorage.clear();
+      if (
+        window.location.pathname !== "/login" &&
+        window.location.pathname !== "/role-selection"
+      ) {
+        toast.error("Session expired. Please log in again.");
+        window.location.href = "/role-selection";
       }
     } else if (response?.status === 403) {
-      toast.error('Access denied. You don\'t have permission to perform this action.');
+      toast.error("Access denied. You don't have permission for this action.");
     } else if (response?.status === 404) {
-      toast.error('Resource not found.');
+      toast.error("Resource not found.");
     } else if (response?.status === 429) {
-      toast.error('Too many requests. Please try again later.');
+      toast.error("Too many requests. Please try again later.");
     } else if (response?.status >= 500) {
-      toast.error('Server error. Please try again later.');
-    } else if (error.code === 'ECONNABORTED') {
-      toast.error('Request timeout. Please check your connection.');
+      toast.error("Server error. Please try again later.");
+    } else if (error.code === "ECONNABORTED") {
+      toast.error("Request timeout. Please check your connection.");
     } else if (!response) {
-      toast.error('Network error. Please check your internet connection.');
+      toast.error("Network error. Please check your internet connection.");
     }
-    
+
     return Promise.reject(error);
   }
 );
 
-// API endpoints
+// ================================
+// 🔐 Authentication APIs
+// ================================
 export const authAPI = {
-  login: (credentials) => api.post('/auth/login', credentials),
-  register: (userData) => api.post('/auth/register', userData),
-  logout: () => api.post('/auth/logout'),
-  getProfile: () => api.get('/auth/profile'),
-  updatePassword: (passwordData) => api.put('/auth/update-password', passwordData),
-  forgotPassword: (email) => api.post('/auth/forgot-password', { email }),
+  login: (credentials) => api.post("/auth/login", credentials),
+  register: (userData) => api.post("/auth/register", userData),
+  logout: () => api.post("/auth/logout"),
+  getProfile: () => api.get("/auth/profile"),
+  updatePassword: (passwordData) =>
+    api.put("/auth/update-password", passwordData),
+  forgotPassword: (email) => api.post("/auth/forgot-password", { email }),
 };
 
+// ================================
+// 🚘 Driver APIs
+// ================================
 export const driverAPI = {
-  register: (driverData) => api.post('/driver/register', driverData),
-  login: (credentials) => api.post('/driver/login', credentials),
-  getProfile: () => api.get('/driver/profile'),
-  updateProfile: (data) => api.put('/driver/profile', data),
+  register: (driverData) => api.post("/driver/register", driverData),
+  login: (credentials) => api.post("/driver/login", credentials),
+  getProfile: () => api.get("/driver/profile"),
+  updateProfile: (data) => api.put("/driver/update", data),
 };
 
+// ================================
+// 👤 User APIs
+// ================================
+export const userAPI = {
+  register: (data) => api.post("/user/register", data),
+  login: (data) => api.post("/user/login", data),
+  getProfile: () => api.get("/user/profile"),
+  updateProfile: (data) => api.put("/user/update", data),
+  getMyRides: () => api.get("/user/my-rides"),
+};
+
+// ================================
+// 🧭 Ride APIs
+// ================================
 export const ridesAPI = {
-  getAllRides: (params) => api.get('/rides', { params }),
-  createRide: (rideData) => api.post('/rides', rideData),
-  getRideById: (id) => api.get(`/rides/${id}`),
-  updateRide: (id, rideData) => api.put(`/rides/${id}`, rideData),
-  deleteRide: (id) => api.delete(`/rides/${id}`),
-  bookRide: (id, bookingData) => api.post(`/rides/${id}/book`, bookingData),
-  getUserRides: () => api.get('/rides/user'),
-  getDriverRides: () => api.get('/rides/driver'),
+  getAvailableRides: (params) => api.get("/rides/available", { params }),
+  offerRide: (rideData) => api.post("/rides/offer", rideData),
+  bookRide: (data) => api.post("/rides/book", data),
+  getUserRides: () => api.get("/rides/user"),
+  getDriverRides: () => api.get("/rides/driver"),
+  cancelRide: (rideId) => api.patch(`/rides/cancel/${rideId}`),
 };
 
+// ================================
+// 💬 Contact Form API
+// ================================
 export const contactAPI = {
-  sendMessage: (messageData) => api.post('/contact', messageData),
+  sendMessage: (messageData) => api.post("/contact", messageData),
 };
 
-// Utility functions
+// ================================
+// 🧩 Utility Functions
+// ================================
 export const handleApiError = (error) => {
-  const message = error.response?.data?.message || error.message || 'An unexpected error occurred';
-  return message;
+  return (
+    error.response?.data?.message ||
+    error.message ||
+    "An unexpected error occurred"
+  );
 };
 
 export const isApiError = (error) => {

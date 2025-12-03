@@ -13,6 +13,12 @@ import { protect } from "../middleware/authMiddleware.js";
 const router = express.Router();
 
 /**
+ * ============================
+ * 🚗 DRIVER AUTH ROUTES
+ * ============================
+ */
+
+/**
  * @route   POST /api/driver/register
  * @desc    Register a new driver
  * @access  Public
@@ -21,10 +27,16 @@ router.post("/register", registerDriver);
 
 /**
  * @route   POST /api/driver/login
- * @desc    Driver login
+ * @desc    Authenticate driver & return token
  * @access  Public
  */
 router.post("/login", loginDriver);
+
+/**
+ * ============================
+ * 👤 DRIVER PROFILE ROUTES
+ * ============================
+ */
 
 /**
  * @route   GET /api/driver/profile
@@ -34,15 +46,8 @@ router.post("/login", loginDriver);
 router.get("/profile", protect, getDriverProfile);
 
 /**
- * @route   GET /api/driver/my-rides
- * @desc    Get all rides offered by the logged-in driver
- * @access  Private (Driver only)
- */
-router.get("/my-rides", protect, getDriverRides);
-
-/**
  * @route   PUT /api/driver/update
- * @desc    Update driver info
+ * @desc    Update driver profile
  * @access  Private (Driver only)
  */
 router.put("/update", protect, updateDriverProfile);
@@ -55,9 +60,28 @@ router.put("/update", protect, updateDriverProfile);
 router.delete("/delete", protect, deleteDriverAccount);
 
 /**
+ * ============================
+ * 🚘 DRIVER RIDES ROUTES
+ * ============================
+ */
+
+/**
+ * @route   GET /api/driver/my-rides
+ * @desc    Get all rides created by the driver
+ * @access  Private (Driver only)
+ */
+router.get("/my-rides", protect, getDriverRides);
+
+/**
+ * ============================
+ * 👥 ADMIN/UTILITY ROUTES
+ * ============================
+ */
+
+/**
  * @route   GET /api/driver/all
- * @desc    Get list of all drivers (admin feature)
- * @access  Private (optional, role check can be added later)
+ * @desc    Get all drivers (admin or internal)
+ * @access  Private (optional)
  */
 router.get("/all", protect, getAllDrivers);
 

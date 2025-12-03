@@ -3,7 +3,7 @@ import Ride from "../models/offer-rides.model.js";
 import bcrypt from "bcryptjs";
 import jwt from "jsonwebtoken";
 
-// Helper: Generate JWT token
+// ===================== Helper =====================
 const generateToken = (id, role) => {
   return jwt.sign({ id, role }, process.env.JWT_SECRET, { expiresIn: "7d" });
 };
@@ -19,11 +19,10 @@ export const registerDriver = async (req, res) => {
     if (!name || !email || !password || !carnumber) {
       return res.status(400).json({
         success: false,
-        message: "Name, email, password, and carnumber are required",
+        message: "Name, email, password, and car number are required",
       });
     }
 
-    // Check existing driver
     const existingDriver = await Driver.findOne({ email });
     if (existingDriver) {
       return res
@@ -31,14 +30,10 @@ export const registerDriver = async (req, res) => {
         .json({ success: false, message: "Driver already exists" });
     }
 
-    // Hash password
-    const hashedPassword = await bcrypt.hash(password, 10);
-
-    // Create driver
     const driver = await Driver.create({
       name,
       email,
-      password: hashedPassword,
+      password,
       phone,
       carnumber,
       gender,
@@ -47,7 +42,7 @@ export const registerDriver = async (req, res) => {
 
     const token = generateToken(driver._id, "driver");
 
-    console.log(`✅ Driver registered successfully: ${email}`);
+    console.log(` Driver registered successfully: ${email}`);
 
     res.status(201).json({
       success: true,
@@ -76,28 +71,33 @@ export const loginDriver = async (req, res) => {
   try {
     const { email, password } = req.body;
 
+    // Validate input
     if (!email || !password) {
       return res.status(400).json({
         success: false,
-        message: "Please provide email and password",
+        message: "Please provide both email and password",
       });
     }
 
+    // Find driver
     const driver = await Driver.findOne({ email }).select("+password");
     if (!driver) {
       return res.status(401).json({
         success: false,
-        message: "Driver not found",
+        message: "Driver not found. Please register first.",
       });
     }
 
+    // Check password
     const isMatch = await bcrypt.compare(password, driver.password);
     if (!isMatch) {
-      return res
-        .status(401)
-        .json({ success: false, message: "Invalid credentials" });
+      return res.status(401).json({
+        success: false,
+        message: "Invalid email or password",
+      });
     }
 
+    // Generate token
     const token = generateToken(driver._id, "driver");
 
     console.log(`✅ Driver logged in successfully: ${email}`);
@@ -117,7 +117,7 @@ export const loginDriver = async (req, res) => {
     });
   } catch (err) {
     console.error("❌ Driver login error:", err.message);
-    res.status(500).json({ success: false, message: "Server error" });
+    res.status(500).json({ success: false, message: "Server error during login" });
   }
 };
 
@@ -197,11 +197,11 @@ export const updateDriverProfile = async (req, res) => {
     }
 
     const updates = {};
-    const { name, phone, vehicle, gender } = req.body;
+    const { name, phone, carnumber, gender } = req.body;
 
     if (name) updates.name = name;
     if (phone) updates.phone = phone;
-    if (vehicle) updates.vehicle = vehicle;
+    if (carnumber) updates.carnumber = carnumber;
     if (gender) updates.gender = gender;
 
     const updatedDriver = await Driver.findByIdAndUpdate(req.user._id, updates, {
@@ -255,7 +255,7 @@ export const deleteDriverAccount = async (req, res) => {
 export const getAllDrivers = async (req, res) => {
   try {
     const drivers = await Driver.find().select(
-      "name email phone vehicle gender createdAt"
+      "name email phone carnumber gender createdAt"
     );
 
     res.status(200).json({

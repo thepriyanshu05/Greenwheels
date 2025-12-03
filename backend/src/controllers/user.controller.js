@@ -3,7 +3,7 @@ import bcrypt from "bcryptjs";
 import jwt from "jsonwebtoken";
 import Ride from "../models/offer-rides.model.js";
 
-// Helper: Generate JWT token
+// ====================== Helper ======================
 const generateToken = (id, role) => {
   return jwt.sign({ id, role }, process.env.JWT_SECRET, { expiresIn: "7d" });
 };
@@ -23,7 +23,7 @@ export const registerUser = async (req, res) => {
       });
     }
 
-    // Check existing user
+    // Check if user already exists
     const existingUser = await User.findOne({ email });
     if (existingUser) {
       return res
@@ -31,8 +31,10 @@ export const registerUser = async (req, res) => {
         .json({ success: false, message: "User already exists" });
     }
 
+    // Hash password
     const hashedPassword = await bcrypt.hash(password, 10);
 
+    // Create user
     const user = await User.create({
       name,
       email,
@@ -42,6 +44,7 @@ export const registerUser = async (req, res) => {
       role: "user",
     });
 
+    // Generate JWT
     const token = generateToken(user._id, "user");
 
     console.log(`✅ User registered successfully: ${email}`);
@@ -76,22 +79,24 @@ export const loginUser = async (req, res) => {
     if (!email || !password) {
       return res.status(400).json({
         success: false,
-        message: "Please provide email and password",
+        message: "Please provide both email and password",
       });
     }
 
     const user = await User.findOne({ email }).select("+password");
     if (!user) {
-      return res
-        .status(401)
-        .json({ success: false, message: "User not found" });
+      return res.status(401).json({
+        success: false,
+        message: "User not found. Please register first.",
+      });
     }
 
     const isMatch = await bcrypt.compare(password, user.password);
     if (!isMatch) {
-      return res
-        .status(401)
-        .json({ success: false, message: "Invalid credentials" });
+      return res.status(401).json({
+        success: false,
+        message: "Invalid email or password",
+      });
     }
 
     const token = generateToken(user._id, "user");
@@ -113,7 +118,9 @@ export const loginUser = async (req, res) => {
     });
   } catch (err) {
     console.error("❌ User login error:", err.message);
-    res.status(500).json({ success: false, message: "Server error" });
+    res
+      .status(500)
+      .json({ success: false, message: "Server error during login" });
   }
 };
 
@@ -152,7 +159,7 @@ export const getUserProfile = async (req, res) => {
 };
 
 /**
- * 🚘 Get rides booked by the user
+ * 🚘 Get rides booked by this user
  * GET /api/user/my-rides
  */
 export const getUserRides = async (req, res) => {
@@ -165,7 +172,7 @@ export const getUserRides = async (req, res) => {
     }
 
     const rides = await Ride.find({ passengers: req.user._id })
-      .populate("driver", "name email vehicle")
+      .populate("driver", "name email carnumber")
       .sort({ createdAt: -1 });
 
     res.status(200).json({

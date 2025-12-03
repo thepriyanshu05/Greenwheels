@@ -17,6 +17,8 @@ import {
 } from "lucide-react";
 import { useState } from "react";
 import { redirect } from "react-router-dom";
+import { toast } from "sonner";
+import { ridesAPI } from "@/services/api";
 
 const fadeInUp = {
   initial: { opacity: 0, y: 60 },
@@ -221,40 +223,31 @@ export default function OfferRidePage() {
   const handleSubmit = async () => {
     const driverId = sessionStorage.getItem("driverId");
     console.log("Driver ID:", driverId);
-    if (!driverId) {
-      alert("Driver ID not found. Please log in as a driver.");
+
+    if (!fromLocation || !toLocation || !date || !time) {
+      toast.error("Please fill all required ride details.");
       return;
     }
+
+    const rideDateTime = new Date(`${date}T${time}`);
+
     const rideData = {
       from: fromLocation,
       to: toLocation,
-      date,
-      time,
-      transport: modeOfTransport,
-      passengers,
-      contribution,
-      driver: driverId, // 👈 driverId add karo
+      date: rideDateTime,
+      seatsAvailable: passengers,
+      fare: contribution,
+      vehicle: modeOfTransport,
     };
 
-
     try {
-      const response = await fetch("http://localhost:5000/api/rides/offer-ride", {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify(rideData),
-      });
+      const res = await ridesAPI.offerRide(rideData);
 
-      const result = await response.json();
-      if (response.ok) {
-        alert("Ride published successfully!");
-      } else {
-        alert("Failed to publish ride: " + result.message);
-      }
+      toast.success(res.data?.message || "Ride published successfully!");
+      navigate("/driver-dashboard");
     } catch (error) {
-      console.error("Error:", error);
-      alert("Something went wrong!");
+      console.error("Error offering ride:", error);
+      // Global Axios interceptor will show a friendly toast for network / server errors
     }
   };
 

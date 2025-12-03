@@ -19,22 +19,20 @@ import userRoutes from "./src/routes/user.route.js";
 import authRoutes from "./src/routes/auth.route.js";
 import contactRoutes from "./src/routes/contact.route.js";
 import confirmRideRoutes from "./src/routes/confirm-ride.route.js";
-import "./src/config/passport.js"; // Passport config
+import "./src/config/passport.js"; // Passport configuration
 
-// ==================== ENV + DIR CONFIG ====================
+// ==================== ENV & DIR CONFIG ====================
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
-
-// Explicitly load .env
 dotenv.config({ path: path.join(__dirname, ".env") });
 
 // ==================== APP INIT ====================
 const app = express();
 
-// ==================== DATABASE ====================
+// ==================== DATABASE CONNECTION ====================
 connectDB();
 
-// ==================== SECURITY ====================
+// ==================== SECURITY MIDDLEWARE ====================
 app.use(
   helmet({
     contentSecurityPolicy: {
@@ -50,14 +48,14 @@ app.use(
   })
 );
 
-app.use(mongoSanitize()); // Prevent NoSQL injections
+app.use(mongoSanitize()); // Prevent NoSQL injection
 app.use(compression()); // Compress responses
 
 // ==================== RATE LIMITING ====================
 const generalLimiter = rateLimit({
-  windowMs: 15 * 60 * 1000, // 15 min
-  max: 100, // 100 requests per 15 min
-  message: "Too many requests from this IP, please try again later.",
+  windowMs: 15 * 60 * 1000, // 15 minutes
+  max: 100,
+  message: "Too many requests from this IP. Please try again later.",
   standardHeaders: true,
   legacyHeaders: false,
 });
@@ -65,16 +63,16 @@ const generalLimiter = rateLimit({
 const authLimiter = rateLimit({
   windowMs: 15 * 60 * 1000,
   max: 5,
-  message: "Too many authentication attempts, please try again later.",
+  message: "Too many login attempts. Try again later.",
   standardHeaders: true,
   legacyHeaders: false,
 });
 
-// Apply to all routes and stricter for /auth
+// Apply limits
 app.use("/api/", generalLimiter);
 app.use("/api/auth", authLimiter);
 
-// ==================== MIDDLEWARES ====================
+// ==================== CORE MIDDLEWARE ====================
 app.use(
   cors({
     origin: process.env.CLIENT_URL || "http://localhost:5173",
@@ -89,26 +87,25 @@ app.use(express.urlencoded({ extended: true, limit: "10mb" }));
 // ==================== SESSION & PASSPORT ====================
 app.use(
   session({
-    secret:
-      process.env.SESSION_SECRET ||
-      "your-session-secret-change-this-in-production",
+    secret: process.env.SESSION_SECRET || "super-secret-session-key",
     resave: false,
     saveUninitialized: false,
     cookie: {
       secure: process.env.NODE_ENV === "production",
       httpOnly: true,
-      maxAge: 24 * 60 * 60 * 1000, // 24h
+      maxAge: 24 * 60 * 60 * 1000, // 24 hours
     },
   })
 );
 app.use(passport.initialize());
 app.use(passport.session());
 
-// ==================== ROUTES ====================
+// ==================== ROOT ENDPOINT ====================
 app.get("/", (req, res) => {
-  res.send("🚗 Greenwheels API is running...");
+  res.send("🚗 GreenWheels API is running...");
 });
 
+// ==================== ROUTES ====================
 app.use("/api/driver", driverRoutes);
 app.use("/api/rides", rideRoutes);
 app.use("/api/auth", authRoutes);
@@ -118,7 +115,7 @@ app.use("/api/confirm-ride", confirmRideRoutes);
 
 // ==================== ERROR HANDLING ====================
 app.use((err, req, res, next) => {
-  console.error("Error:", err.stack);
+  console.error("❌ Error:", err.stack);
 
   if (err.name === "ValidationError") {
     return res.status(400).json({
@@ -129,27 +126,26 @@ app.use((err, req, res, next) => {
   }
 
   if (err.name === "CastError") {
-    return res
-      .status(400)
-      .json({ success: false, message: "Invalid ID format" });
+    return res.status(400).json({ success: false, message: "Invalid ID format" });
   }
 
   if (err.code === 11000) {
-    return res
-      .status(400)
-      .json({ success: false, message: "Duplicate field value" });
+    return res.status(400).json({
+      success: false,
+      message: "Duplicate field value entered",
+    });
   }
 
   res.status(err.status || 500).json({
     success: false,
     message:
       process.env.NODE_ENV === "production"
-        ? "Something went wrong!"
+        ? "Something went wrong on the server."
         : err.message,
   });
 });
 
-// 404 handler
+// 404 Handler
 app.use("*", (req, res) => {
   res.status(404).json({
     success: false,
@@ -157,7 +153,7 @@ app.use("*", (req, res) => {
   });
 });
 
-// ================== SERVER START (Auto Port Retry v2) ==================
+// ==================== SERVER START ====================
 const DEFAULT_PORT = parseInt(process.env.PORT, 10) || 5000;
 const MAX_ATTEMPTS = 10;
 
@@ -165,12 +161,12 @@ const startServer = async (port, attemptsLeft) => {
   const server = app
     .listen(port)
     .on("listening", () => {
-      console.log(`🚀 Server running on http://localhost:${port}`);
+      console.log(`🚀 Server running at: http://localhost:${port}`);
       console.log(`🌍 Environment: ${process.env.NODE_ENV || "development"}`);
     })
     .on("error", (err) => {
       if (err.code === "EADDRINUSE" && attemptsLeft > 0) {
-        console.warn(`⚠️ Port ${port} in use, trying port ${port + 1}...`);
+        console.warn(`⚠️ Port ${port} in use, retrying with port ${port + 1}...`);
         server.close(() => startServer(port + 1, attemptsLeft - 1));
       } else {
         console.error("❌ Failed to start server:", err);
@@ -178,24 +174,22 @@ const startServer = async (port, attemptsLeft) => {
       }
     });
 
-  // Graceful shutdown
+  // Graceful shutdowns
   process.on("SIGTERM", () => {
-    console.log("SIGTERM received. Shutting down gracefully...");
-    server.close(() => {
-      console.log("Process terminated.");
-    });
+    console.log("🧹 SIGTERM received. Shutting down gracefully...");
+    server.close(() => console.log("Server closed. Process terminated."));
   });
 
   process.on("unhandledRejection", (err) => {
-    console.error("Unhandled Promise Rejection:", err);
+    console.error("💥 Unhandled Promise Rejection:", err);
     server.close(() => process.exit(1));
   });
 
   process.on("uncaughtException", (err) => {
-    console.error("Uncaught Exception:", err);
+    console.error("🔥 Uncaught Exception:", err);
     process.exit(1);
   });
 };
 
-// Try ports 5000 → 5009 automatically
+// Attempt ports 5000 → 5009 automatically
 startServer(DEFAULT_PORT, MAX_ATTEMPTS);
