@@ -1,0 +1,202 @@
+@import "tailwindcss";
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+/* -------------------------------
+   🌿 Greenwheels Light Theme (Default)
+---------------------------------- */
+:root {
+  --background: 150 50% 97%;
+  --foreground: 155 20% 15%;
+
+  --card: 0 0% 100%;
+  --card-foreground: 155 20% 15%;
+
+  --primary: 160 84% 39%; /* emerald-500 */
+  --primary-foreground: 0 0% 100%;
+
+  --secondary: 160 70% 85%;
+  --secondary-foreground: 155 25% 20%;
+
+  --muted: 155 30% 90%;
+  --muted-foreground: 155 20% 35%;
+
+  --accent: 160 70% 80%;
+  --accent-foreground: 155 30% 15%;
+
+  --destructive: 0 84% 60%;
+  --destructive-foreground: 213 31% 91%;
+
+  --border: 160 30% 80%;
+  --input: 160 30% 85%;
+  --ring: 160 84% 39%;
+
+  --radius: 0.75rem;
+
+  /* Sidebar */
+  --sidebar-background: 150 50% 97%;
+  --sidebar-foreground: 155 20% 15%;
+  --sidebar-primary: 160 84% 39%;
+  --sidebar-primary-foreground: 0 0% 100%;
+  --sidebar-accent: 155 30% 90%;
+  --sidebar-accent-foreground: 155 20% 15%;
+  --sidebar-border: 160 30% 80%;
+  --sidebar-ring: 160 84% 39%;
+}
+
+/* 🌙 Dark Mode (Emerald Tint) */
+.dark {
+  --background: 160 20% 10%;
+  --foreground: 150 10% 95%;
+  --card: 160 25% 15%;
+  --card-foreground: 150 10% 95%;
+  --primary: 160 84% 39%;
+  --primary-foreground: 150 10% 95%;
+  --secondary: 160 30% 25%;
+  --secondary-foreground: 150 10% 95%;
+  --muted: 160 25% 20%;
+  --muted-foreground: 150 10% 70%;
+  --accent: 160 40% 30%;
+  --accent-foreground: 150 10% 95%;
+  --border: 160 25% 25%;
+  --input: 160 25% 25%;
+  --ring: 160 84% 39%;
+}
+
+/* -------------------------------
+   🌄 Base Elements & Layout
+---------------------------------- */
+@layer base {
+  body {
+    background: linear-gradient(135deg, hsl(150, 50%, 97%), hsl(155, 45%, 92%));
+    min-height: 100vh;
+    color: hsl(var(--foreground));
+    font-family: 'Inter', sans-serif;
+    line-height: 1.6;
+    transition: background 0.3s ease, color 0.3s ease;
+  }
+
+  html {
+    scroll-behavior: smooth;
+  }
+
+  .with-border {
+    border: 1px solid hsl(var(--border));
+  }
+}
+
+/* -------------------------------
+   💎 Utility Classes (Retained)
+---------------------------------- */
+@layer utilities {
+  /* Glassmorphism */
+  .glass {
+    @apply backdrop-blur-md bg-white/40 border border-green-200/50 rounded-xl shadow-md;
+  }
+
+  .glass-strong {
+    @apply backdrop-blur-lg bg-white/60 border border-green-300/70 rounded-xl shadow-lg;
+  }
+
+  /* Neumorphism */
+  .neumorphic {
+    background: linear-gradient(145deg, rgba(255,255,255,0.3), rgba(255,255,255,0.05));
+    box-shadow:
+      12px 12px 24px rgba(0,0,0,0.15),
+      -12px -12px 24px rgba(255,255,255,0.2),
+      inset 1px 1px 5px rgba(255,255,255,0.2),
+      inset -1px -1px 5px rgba(0,0,0,0.15);
+    border-radius: var(--radius);
+  }
+
+  /* Gradient Backgrounds */
+  .gradient-space {
+    background: linear-gradient(135deg, #E8FDF2 0%, #D1FAE5 50%, #A7F3D0 100%);
+  }
+
+  .gradient-glow {
+    background: linear-gradient(135deg, rgba(16,185,129,0.15) 0%, rgba(5,150,105,0.1) 100%);
+  }
+
+  /* Glow Effects */
+  .glow-cyan {
+    box-shadow: 0 0 15px rgba(16, 185, 129, 0.4), 0 0 30px rgba(5, 150, 105, 0.3);
+  }
+
+  .glow-mint {
+    box-shadow: 0 0 15px rgba(110, 231, 183, 0.4), 0 0 30px rgba(110, 231, 183, 0.2);
+  }
+
+  /* Animation Utilities */
+  .animate-float {
+    animation: float 6s ease-in-out infinite;
+  }
+
+  .animate-glow {
+    animation: glow 2s ease-in-out infinite alternate;
+  }
+
+  .animate-sparkle {
+    animation: sparkle 3s linear infinite;
+  }
+
+  /* Page Gradients */
+  .page-green {
+    background: linear-gradient(to bottom right, #f0fdf4, #d1fae5, #bbf7d0);
+  }
+
+  .page-green-strong {
+    background: linear-gradient(to bottom right, #a7f3d0, #6ee7b7, #34d399);
+  }
+
+  /* Buttons */
+  .btn-primary {
+    @apply bg-gradient-to-r from-emerald-500 to-emerald-600 text-white 
+           hover:from-emerald-600 hover:to-emerald-700 transition 
+           rounded-md shadow hover:shadow-lg;
+  }
+
+  .btn-outline {
+    @apply border border-emerald-500 text-emerald-600 
+           hover:bg-emerald-500 hover:text-white transition rounded-md;
+  }
+}
+
+/* -------------------------------
+   🌬️ Keyframes
+---------------------------------- */
+@keyframes float {
+  0%, 100% { transform: translateY(0); }
+  50% { transform: translateY(-10px); }
+}
+
+@keyframes glow {
+  from { box-shadow: 0 0 20px rgba(16, 185, 129, 0.2); }
+  to { box-shadow: 0 0 30px rgba(16, 185, 129, 0.4); }
+}
+
+@keyframes sparkle {
+  0%, 100% { opacity: 0; transform: scale(0); }
+  50% { opacity: 1; transform: scale(1); }
+}
+
+/* -------------------------------
+   🪄 Framer Motion Compatibility
+---------------------------------- */
+.fade-up {
+  opacity: 0;
+  transform: translateY(30px);
+}
+
+.fade-in {
+  opacity: 0;
+}
+
+/* -------------------------------
+   🖱️ Scrollbar Styling
+---------------------------------- */
+::-webkit-scrollbar {
+  width: 0px;
+  height: 0px;
+}
